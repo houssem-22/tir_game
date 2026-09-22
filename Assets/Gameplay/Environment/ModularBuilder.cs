@@ -22,7 +22,8 @@ namespace Cipher.Gameplay.Environment
             bool doorSouth = false,
             bool doorEast = false,
             bool doorWest = false,
-            bool withCeiling = true)
+            bool withCeiling = true,
+            Color? lightColor = null)
         {
             var root = new GameObject(name);
             root.transform.position = center;
@@ -41,6 +42,18 @@ namespace Cipher.Gameplay.Environment
             BuildWallX(root.transform, "Wall_N", new Vector3(0f, h * 0.5f, d * 0.5f - WallThickness * 0.5f), w, h, WallThickness, wallMat, doorNorth);
             BuildWallZ(root.transform, "Wall_W", new Vector3(-w * 0.5f + WallThickness * 0.5f, h * 0.5f, 0f), WallThickness, h, d, wallMat, doorWest);
             BuildWallZ(root.transform, "Wall_E", new Vector3(w * 0.5f - WallThickness * 0.5f, h * 0.5f, 0f), WallThickness, h, d, wallMat, doorEast);
+
+            var lightGo = new GameObject("InteriorLight");
+            lightGo.transform.SetParent(root.transform, false);
+            lightGo.transform.localPosition = new Vector3(0f, h * 0.78f, 0f);
+            var light = lightGo.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.range = Mathf.Max(w, d) * 0.95f + 2f;
+            light.intensity = 1.55f;
+            light.color = lightColor ?? new Color(1f, 0.93f, 0.8f);
+            light.shadows = LightShadows.Soft;
+
+            CreatePart(root.transform, "LightFixture", new Vector3(0f, h - 0.18f, 0f), new Vector3(1.1f, 0.08f, 0.45f), RuntimeMaterials.Metal);
             return root;
         }
 
@@ -52,16 +65,17 @@ namespace Cipher.Gameplay.Environment
             float height,
             Material wallMat,
             Material floorMat,
-            bool axisZ = true)
+            bool axisZ = true,
+            Color? lightColor = null)
         {
             if (axisZ)
             {
                 return BuildRoom(name, center, new Vector3(width, height, length), wallMat, floorMat, wallMat,
-                    doorNorth: true, doorSouth: true);
+                    doorNorth: true, doorSouth: true, lightColor: lightColor);
             }
 
             return BuildRoom(name, center, new Vector3(length, height, width), wallMat, floorMat, wallMat,
-                doorEast: true, doorWest: true);
+                doorEast: true, doorWest: true, lightColor: lightColor);
         }
 
         public static GameObject CreateProp(string name, Vector3 worldPos, Vector3 scale, Material mat)
@@ -84,7 +98,6 @@ namespace Cipher.Gameplay.Environment
             return go;
         }
 
-        /// <summary>Wall spanning X (faces north/south).</summary>
         static void BuildWallX(Transform parent, string name, Vector3 localPos, float width, float height, float thickness, Material mat, bool door)
         {
             if (!door)
@@ -112,9 +125,10 @@ namespace Cipher.Gameplay.Environment
                     new Vector3(localPos.x, yBase + DoorHeight + lintelH * 0.5f, localPos.z),
                     new Vector3(DoorWidth, lintelH, thickness), mat);
             }
+
+            AddDoorFrameX(parent, name, localPos, yBase, thickness);
         }
 
-        /// <summary>Wall spanning Z (faces east/west).</summary>
         static void BuildWallZ(Transform parent, string name, Vector3 localPos, float thickness, float height, float depth, Material mat, bool door)
         {
             if (!door)
@@ -142,6 +156,32 @@ namespace Cipher.Gameplay.Environment
                     new Vector3(localPos.x, yBase + DoorHeight + lintelH * 0.5f, localPos.z),
                     new Vector3(thickness, lintelH, DoorWidth), mat);
             }
+
+            AddDoorFrameZ(parent, name, localPos, yBase, thickness);
+        }
+
+        static void AddDoorFrameX(Transform parent, string name, Vector3 localPos, float yBase, float thickness)
+        {
+            var frame = RuntimeMaterials.Metal;
+            const float jam = 0.08f;
+            CreatePart(parent, name + "_FrameL",
+                new Vector3(localPos.x - DoorWidth * 0.5f, yBase + DoorHeight * 0.5f, localPos.z),
+                new Vector3(jam, DoorHeight, thickness + 0.06f), frame);
+            CreatePart(parent, name + "_FrameR",
+                new Vector3(localPos.x + DoorWidth * 0.5f, yBase + DoorHeight * 0.5f, localPos.z),
+                new Vector3(jam, DoorHeight, thickness + 0.06f), frame);
+        }
+
+        static void AddDoorFrameZ(Transform parent, string name, Vector3 localPos, float yBase, float thickness)
+        {
+            var frame = RuntimeMaterials.Metal;
+            const float jam = 0.08f;
+            CreatePart(parent, name + "_FrameF",
+                new Vector3(localPos.x, yBase + DoorHeight * 0.5f, localPos.z - DoorWidth * 0.5f),
+                new Vector3(thickness + 0.06f, DoorHeight, jam), frame);
+            CreatePart(parent, name + "_FrameB",
+                new Vector3(localPos.x, yBase + DoorHeight * 0.5f, localPos.z + DoorWidth * 0.5f),
+                new Vector3(thickness + 0.06f, DoorHeight, jam), frame);
         }
 
         static void CreatePart(Transform parent, string name, Vector3 localPos, Vector3 scale, Material mat)

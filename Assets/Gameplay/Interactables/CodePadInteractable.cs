@@ -1,4 +1,5 @@
 using Cipher.Clues;
+using Cipher.Gameplay;
 using UnityEngine;
 
 namespace Cipher.Gameplay.Interactables
@@ -9,8 +10,10 @@ namespace Cipher.Gameplay.Interactables
         bool _open;
         string _input = string.Empty;
         bool _unlocked;
+        GUIStyle _keyStyle;
+        GUIStyle _titleStyle;
 
-        public string Prompt => _unlocked ? "Porte ouverte" : "ENTER CODE [E]";
+        public string Prompt => _unlocked ? "Porte ouverte" : "Saisir le code [E]";
         public bool CanInteract => !_unlocked;
 
         public void Setup(MatchManager match)
@@ -22,10 +25,14 @@ namespace Cipher.Gameplay.Interactables
         {
             if (_unlocked) return;
             if (_match == null) _match = FindFirstObjectByType<MatchManager>();
-            _open = true;
-            _input = string.Empty;
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            if (!_open)
+            {
+                _open = true;
+                _input = string.Empty;
+                GameplayUi.PushModal();
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
         }
 
         void Update()
@@ -34,39 +41,85 @@ namespace Cipher.Gameplay.Interactables
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 ClosePad();
+                return;
+            }
+
+            for (int i = 0; i <= 9; i++)
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha0 + i) || Input.GetKeyDown(KeyCode.Keypad0 + i))
+                {
+                    Append(i.ToString());
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Backspace) && _input.Length > 0)
+            {
+                _input = _input.Substring(0, _input.Length - 1);
+            }
+
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
+                Submit();
             }
         }
 
         void OnGUI()
         {
             if (!_open) return;
+            EnsureStyles();
 
-            float w = 360f;
-            float h = 220f;
+            float w = 340f;
+            float h = 420f;
             var rect = new Rect((Screen.width - w) * 0.5f, (Screen.height - h) * 0.5f, w, h);
-            GUI.Box(rect, "BUNKER ACCESS — ENTER CODE");
+            GUI.Box(rect, GUIContent.none);
+            GUI.Label(new Rect(rect.x, rect.y + 12f, w, 28f), "BUNKER ACCESS", _titleStyle);
 
-            var codeRect = new Rect(rect.x + 40f, rect.y + 50f, w - 80f, 36f);
-            GUI.Label(new Rect(codeRect.x, codeRect.y - 22f, codeRect.width, 20f), "CODE _ _ _ _");
-            GUI.skin.textField.fontSize = 28;
-            GUI.skin.textField.alignment = TextAnchor.MiddleCenter;
-            _input = GUI.TextField(codeRect, _input, 4);
-            _input = Sanitize(_input);
+            string display = _input.PadRight(4, '_');
+            GUI.Box(new Rect(rect.x + 40f, rect.y + 48f, w - 80f, 44f), display);
 
-            if (GUI.Button(new Rect(rect.x + 40f, rect.y + 110f, 120f, 36f), "SUBMIT"))
+            float kx = rect.x + 40f;
+            float ky = rect.y + 110f;
+            float kw = 72f;
+            float kh = 48f;
+            float gap = 12f;
+            int n = 1;
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 3; col++)
+                {
+                    if (GUI.Button(new Rect(kx + col * (kw + gap), ky + row * (kh + gap), kw, kh), n.ToString(), _keyStyle))
+                    {
+                        Append(n.ToString());
+                    }
+                    n++;
+                }
+            }
+
+            if (GUI.Button(new Rect(kx, ky + 3 * (kh + gap), kw, kh), "CLR", _keyStyle))
+            {
+                _input = string.Empty;
+            }
+
+            if (GUI.Button(new Rect(kx + (kw + gap), ky + 3 * (kh + gap), kw, kh), "0", _keyStyle))
+            {
+                Append("0");
+            }
+
+            if (GUI.Button(new Rect(kx + 2 * (kw + gap), ky + 3 * (kh + gap), kw, kh), "OK", _keyStyle))
             {
                 Submit();
             }
 
-            if (GUI.Button(new Rect(rect.x + 200f, rect.y + 110f, 120f, 36f), "CANCEL"))
-            {
-                ClosePad();
-            }
-
             if (_match != null)
             {
-                GUI.Label(new Rect(rect.x + 40f, rect.y + 160f, w - 80f, 40f), _match.StatusMessage);
+                GUI.Label(new Rect(rect.x + 24f, rect.y + h - 36f, w - 48f, 24f), _match.StatusMessage);
             }
+        }
+
+        void Append(string digit)
+        {
+            if (_input.Length >= 4) return;
+            _input += digit;
         }
 
         void Submit()
@@ -75,35 +128,40 @@ namespace Cipher.Gameplay.Interactables
             if (_match.TrySubmitCode(_input))
             {
                 _unlocked = true;
-                _open = false;
+                ClosePad();
                 var rend = GetComponentInChildren<Renderer>();
                 if (rend != null) rend.material.color = new Color(0.2f, 0.75f, 0.35f);
-                RestoreCursor();
+            }
+            else
+            {
+                _input = string.Empty;
             }
         }
 
         void ClosePad()
         {
+            if (!_open) return;
             _open = false;
-            RestoreCursor();
-        }
-
-        void RestoreCursor()
-        {
+            GameplayUi.PopModal();
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
 
-        static string Sanitize(string value)
+        void OnDestroy()
         {
-            if (string.IsNullOrEmpty(value)) return string.Empty;
-            var chars = new char[Mathf.Min(4, value.Length)];
-            int n = 0;
-            for (int i = 0; i < value.Length && n < 4; i++)
+            if (_open) GameplayUi.PopModal();
+        }
+
+        void EnsureStyles()
+        {
+            if (_keyStyle != null) return;
+            _keyStyle = new GUIStyle(GUI.skin.button) { fontSize = 18, fontStyle = FontStyle.Bold };
+            _titleStyle = new GUIStyle(GUI.skin.label)
             {
-                if (char.IsDigit(value[i])) chars[n++] = value[i];
-            }
-            return new string(chars, 0, n);
+                fontSize = 18,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
         }
     }
 }

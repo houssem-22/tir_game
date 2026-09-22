@@ -51,6 +51,14 @@ namespace Cipher.Clues
 
         public bool Contains(string id) => Find(id) != null;
 
+        public static void ClearRuntimeCache()
+        {
+            if (_runtimeFallback == null) return;
+            if (Application.isPlaying) Destroy(_runtimeFallback);
+            else DestroyImmediate(_runtimeFallback);
+            _runtimeFallback = null;
+        }
+
         public static ClueDatabase CreateBlacksiteRuntime()
         {
             if (_runtimeFallback != null) return _runtimeFallback;
@@ -63,18 +71,17 @@ namespace Cipher.Clues
                 Node("Zone_Industrial", MapNodeType.Zone, "Industrial Yard", "Zone_Industrial", null, null, false, false, new Vector3(0f, 0f, 18f)),
                 Node("Zone_Bunker", MapNodeType.Zone, "Bunker Approach", "Zone_Bunker", null, null, false, false, new Vector3(30f, 0f, -6f)),
 
-                Node("Building_04", MapNodeType.Building, "Building 04", "Zone_Industrial", "Building_04", null, true, false, new Vector3(2f, 0f, 20f), related: "Terminal_C"),
-                Node("Room_17", MapNodeType.Room, "Room 17", "Zone_Industrial", "Building_04", "Room_17", false, false, new Vector3(2f, 0f, 22f)),
+                Node("Building_04", MapNodeType.Building, "Building 04", "Zone_Industrial", "Building_04", null, true, false, new Vector3(-3.4f, 1.2f, 18f), related: "Terminal_C"),
+                Node("Room_17", MapNodeType.Room, "Room 17", "Zone_Industrial", "Building_04", "Room_17", false, false, new Vector3(2f, 0f, 26f)),
 
-                Node("Camera_12", MapNodeType.Camera, "Camera 12", "Zone_Hospital", "Hospital_Wing", "Corridor_A", true, false, new Vector3(-30f, 2.2f, 10f), faces: "East", related: "Building_04"),
-                Node("Terminal_C", MapNodeType.Terminal, "Terminal C", "Zone_Industrial", "Building_04", "Room_17", true, false, new Vector3(3.5f, 1f, 22.5f), related: "Bunker_07"),
+                Node("Camera_12", MapNodeType.Camera, "Camera 12", "Zone_Hospital", "Hospital_Wing", "CameraRoom", true, false, new Vector3(-25.4f, 2.35f, 17.2f), faces: "East", related: "Building_04"),
+                Node("Terminal_C", MapNodeType.Terminal, "Terminal C", "Zone_Industrial", "Building_04", "Room_17", true, false, new Vector3(4.4f, 1.15f, 27.2f), related: "Bunker_07"),
 
-                Node("Bunker_07", MapNodeType.Bunker, "Bunker 07", "Zone_Bunker", "Bunker_07", "Entry", false, true, new Vector3(32f, 0f, -8f)),
-                Node("Bunker_Terminal", MapNodeType.Terminal, "Bunker Code Pad", "Zone_Bunker", "Bunker_07", "Entry", false, true, new Vector3(32f, 1.1f, -6.5f), related: "Bunker_07"),
+                Node("Bunker_07", MapNodeType.Bunker, "Bunker 07", "Zone_Bunker", "Bunker_07", "Entry", false, true, new Vector3(34f, 0f, -8f)),
+                Node("Bunker_Terminal", MapNodeType.Terminal, "Bunker Code Pad", "Zone_Bunker", "Bunker_07", "Vault", false, true, new Vector3(34f, 1.15f, -14.4f), related: "Bunker_07"),
 
-                // Extra truth nodes so seed variation can pick alternate chains later
-                Node("Camera_03", MapNodeType.Camera, "Camera 03", "Zone_Hospital", "Hospital_Wing", "Lobby", true, false, new Vector3(-24f, 2.2f, 4f), faces: "South", related: "Building_04"),
-                Node("Computer_A1", MapNodeType.Computer, "Computer A1", "Zone_Hospital", "Hospital_Wing", "Records", true, false, new Vector3(-32f, 1f, 6f), related: "Building_04"),
+                Node("Camera_03", MapNodeType.Camera, "Camera 03", "Zone_Hospital", "Hospital_Wing", "Lobby", true, false, new Vector3(-24.2f, 2.35f, 4.6f), faces: "South", related: "Building_04"),
+                Node("Computer_A1", MapNodeType.Computer, "Computer A1", "Zone_Hospital", "Hospital_Wing", "Records", true, false, new Vector3(-30.5f, 0.98f, 2.5f), related: "Building_04"),
             };
 
             _runtimeFallback = db;

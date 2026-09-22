@@ -1,5 +1,6 @@
 using Cipher.AI;
 using Cipher.Clues;
+using Cipher.Gameplay;
 using Cipher.Gameplay.Environment;
 using Cipher.Gameplay.Interactables;
 using Cipher.Gameplay.Player;
@@ -34,6 +35,7 @@ namespace Cipher.Bootstrap
             var bootstrapCam = GameObject.Find("BootstrapCamera");
             if (bootstrapCam != null) Destroy(bootstrapCam);
 
+            GameplayUi.Reset();
             ClueDatabase.ClearRuntimeCache();
             var db = ClueDatabase.CreateBlacksiteRuntime();
             var matchGo = new GameObject("MatchManager");
@@ -70,28 +72,30 @@ namespace Cipher.Bootstrap
                 var lightGo = new GameObject("Directional Light");
                 var light = lightGo.AddComponent<Light>();
                 light.type = LightType.Directional;
-                light.color = new Color(1f, 0.95f, 0.88f);
-                light.intensity = 1.25f;
+                light.color = new Color(0.55f, 0.68f, 0.9f);
+                light.intensity = 0.85f;
                 light.shadows = LightShadows.Soft;
-                lightGo.transform.rotation = Quaternion.Euler(48f, -35f, 0f);
+                lightGo.transform.rotation = Quaternion.Euler(38f, -40f, 0f);
             }
 
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.42f, 0.45f, 0.5f);
-            RenderSettings.ambientEquatorColor = new Color(0.28f, 0.28f, 0.26f);
-            RenderSettings.ambientGroundColor = new Color(0.12f, 0.11f, 0.1f);
+            RenderSettings.ambientSkyColor = new Color(0.18f, 0.22f, 0.28f);
+            RenderSettings.ambientEquatorColor = new Color(0.12f, 0.12f, 0.11f);
+            RenderSettings.ambientGroundColor = new Color(0.06f, 0.05f, 0.04f);
             RenderSettings.fog = true;
-            RenderSettings.fogColor = new Color(0.35f, 0.38f, 0.4f);
-            RenderSettings.fogDensity = 0.012f;
+            RenderSettings.fogColor = new Color(0.12f, 0.14f, 0.16f);
+            RenderSettings.fogMode = FogMode.Exponential;
+            RenderSettings.fogDensity = 0.018f;
+            RenderSettings.subtractiveShadowColor = new Color(0.15f, 0.16f, 0.2f);
         }
 
         static void BuildClueObjects(ClueDatabase db, MatchManager match)
         {
-            SpawnClue(db, match, "Camera_12", new Vector3(0.55f, 0.35f, 0.45f), RuntimeMaterials.AccentWarn);
-            SpawnClue(db, match, "Building_04", new Vector3(1.1f, 1.7f, 0.2f), RuntimeMaterials.AccentWarn);
-            SpawnClue(db, match, "Terminal_C", new Vector3(0.9f, 1.25f, 0.7f), RuntimeMaterials.AccentIntel);
-            SpawnClue(db, match, "Camera_03", new Vector3(0.45f, 0.3f, 0.4f), RuntimeMaterials.AccentWarn);
-            SpawnClue(db, match, "Computer_A1", new Vector3(0.75f, 0.85f, 0.55f), RuntimeMaterials.Metal);
+            SpawnClue(db, match, "Camera_12", new Vector3(0.42f, 0.28f, 0.55f), RuntimeMaterials.AccentWarn);
+            SpawnClue(db, match, "Building_04", new Vector3(0.18f, 1.5f, 1.2f), RuntimeMaterials.AccentWarn);
+            SpawnClue(db, match, "Terminal_C", new Vector3(0.85f, 1.05f, 0.55f), RuntimeMaterials.AccentIntel);
+            SpawnClue(db, match, "Camera_03", new Vector3(0.38f, 0.24f, 0.5f), RuntimeMaterials.AccentWarn);
+            SpawnClue(db, match, "Computer_A1", new Vector3(0.55f, 0.12f, 0.45f), RuntimeMaterials.Metal);
         }
 
         static void SpawnClue(ClueDatabase db, MatchManager match, string id, Vector3 scale, Material mat)
@@ -146,25 +150,48 @@ namespace Cipher.Bootstrap
             camGo.transform.SetParent(pivot, false);
             var cam = camGo.AddComponent<Camera>();
             cam.nearClipPlane = 0.05f;
-            cam.fieldOfView = 72f;
+            cam.fieldOfView = 70f;
+            cam.farClipPlane = 180f;
+            cam.backgroundColor = new Color(0.07f, 0.09f, 0.11f);
+            cam.clearFlags = CameraClearFlags.SolidColor;
             camGo.tag = "MainCamera";
             camGo.AddComponent<AudioListener>();
 
-            var view = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            view.name = "ViewWeapon";
-            view.transform.SetParent(camGo.transform, false);
-            view.transform.localPosition = new Vector3(0.28f, -0.22f, 0.55f);
-            view.transform.localScale = new Vector3(0.1f, 0.1f, 0.42f);
-            Object.Destroy(view.GetComponent<Collider>());
-            view.GetComponent<Renderer>().sharedMaterial = RuntimeMaterials.Metal;
+            var viewRoot = new GameObject("ViewWeapon");
+            viewRoot.transform.SetParent(camGo.transform, false);
+            viewRoot.transform.localPosition = new Vector3(0.28f, -0.22f, 0.52f);
+
+            var bodyGun = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            bodyGun.name = "Receiver";
+            bodyGun.transform.SetParent(viewRoot.transform, false);
+            bodyGun.transform.localPosition = Vector3.zero;
+            bodyGun.transform.localScale = new Vector3(0.08f, 0.1f, 0.28f);
+            Object.Destroy(bodyGun.GetComponent<Collider>());
+            bodyGun.GetComponent<Renderer>().sharedMaterial = RuntimeMaterials.Metal;
+
+            var barrel = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            barrel.name = "Barrel";
+            barrel.transform.SetParent(viewRoot.transform, false);
+            barrel.transform.localPosition = new Vector3(0f, 0.02f, 0.28f);
+            barrel.transform.localScale = new Vector3(0.035f, 0.035f, 0.32f);
+            Object.Destroy(barrel.GetComponent<Collider>());
+            barrel.GetComponent<Renderer>().sharedMaterial = RuntimeMaterials.Metal;
+
+            var mag = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            mag.name = "Mag";
+            mag.transform.SetParent(viewRoot.transform, false);
+            mag.transform.localPosition = new Vector3(0f, -0.08f, 0.02f);
+            mag.transform.localScale = new Vector3(0.05f, 0.12f, 0.08f);
+            Object.Destroy(mag.GetComponent<Collider>());
+            mag.GetComponent<Renderer>().sharedMaterial = RuntimeMaterials.AccentMuted;
 
             var muzzle = new GameObject("Muzzle").transform;
             muzzle.SetParent(camGo.transform, false);
-            muzzle.localPosition = new Vector3(0.28f, -0.18f, 0.85f);
+            muzzle.localPosition = new Vector3(0.28f, -0.2f, 0.95f);
 
-            player.AddComponent<PlayerController>().BindCamera(pivot);
             player.AddComponent<PlayerHealth>().SetSpawn(spawn, player.transform.rotation);
-            player.AddComponent<WeaponController>().Initialize(muzzle, view.GetComponent<Renderer>());
+            player.AddComponent<PlayerController>().BindCamera(pivot);
+            player.AddComponent<WeaponController>().Initialize(muzzle, bodyGun.GetComponent<Renderer>());
             return player;
         }
 
@@ -202,8 +229,18 @@ namespace Cipher.Bootstrap
             var bot = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             bot.name = name;
             bot.transform.position = pos;
-            bot.GetComponent<Renderer>().sharedMaterial = RuntimeMaterials.Rust;
-            bot.GetComponent<Renderer>().material.color = color;
+            var body = bot.GetComponent<Renderer>();
+            body.sharedMaterial = RuntimeMaterials.Rust;
+            body.material.color = color;
+
+            var visor = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            visor.name = "Visor";
+            visor.transform.SetParent(bot.transform, false);
+            visor.transform.localPosition = new Vector3(0f, 0.45f, 0.28f);
+            visor.transform.localScale = new Vector3(0.42f, 0.16f, 0.18f);
+            Object.Destroy(visor.GetComponent<Collider>());
+            visor.GetComponent<Renderer>().sharedMaterial = RuntimeMaterials.AccentIntel;
+
             var ai = bot.AddComponent<BotController>();
             ai.Setup(waypoints, player, match, color, preferSeekClue: seeker);
         }

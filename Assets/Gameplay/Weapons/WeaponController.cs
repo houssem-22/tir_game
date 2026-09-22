@@ -19,11 +19,11 @@ namespace Cipher.Gameplay.Weapons
         Renderer _viewRenderer;
         PlayerController _player;
 
-        public WeaponDefinition Current => _weapons[_index];
-        public int Magazine => _mag[_index];
-        public int Reserve => _reserve[_index];
+        public WeaponDefinition Current => _weapons != null && _weapons.Length > 0 ? _weapons[_index] : null;
+        public int Magazine => _mag != null ? _mag[_index] : 0;
+        public int Reserve => _reserve != null ? _reserve[_index] : 0;
         public bool IsReloading => _reloading;
-        public int WeaponCount => _weapons.Length;
+        public int WeaponCount => _weapons == null ? 0 : _weapons.Length;
 
         public void Initialize(Transform muzzlePoint, Renderer viewModelRenderer)
         {
@@ -116,6 +116,7 @@ namespace Cipher.Gameplay.Weapons
         {
             if (_reloading) return;
             var w = Current;
+            if (w == null) return;
             bool wantsFire = w.automatic ? Input.GetButton("Fire1") : Input.GetButtonDown("Fire1");
             if (!wantsFire) return;
             if (Time.time < _nextFireTime) return;
@@ -161,7 +162,7 @@ namespace Cipher.Gameplay.Weapons
 
         void ApplyViewTint()
         {
-            if (_viewRenderer == null) return;
+            if (_viewRenderer == null || Current == null) return;
             _viewRenderer.material.color = Current.viewTint;
         }
     }

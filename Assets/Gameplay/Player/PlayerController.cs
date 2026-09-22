@@ -24,9 +24,11 @@ namespace Cipher.Gameplay.Player
         float _verticalVelocity;
         float _pitch;
         bool _locked = true;
+        string _interactPrompt;
 
         public Transform CameraPivot => cameraPivot;
-        public bool InputLocked => !_locked || (_health != null && !_health.IsAlive);
+        public string InteractPrompt => _interactPrompt;
+        public bool InputLocked => !_locked || Cipher.Gameplay.GameplayUi.IsModal || (_health != null && !_health.IsAlive);
 
         public void BindCamera(Transform pivot)
         {
@@ -36,20 +38,22 @@ namespace Cipher.Gameplay.Player
         void Awake()
         {
             _controller = GetComponent<CharacterController>();
-            _health = GetComponent<PlayerHealth>();
+            if (_health == null) _health = GetComponent<PlayerHealth>();
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (_health == null) _health = GetComponent<PlayerHealth>();
+            if (!Cipher.Gameplay.GameplayUi.IsModal && Input.GetKeyDown(KeyCode.Escape))
             {
                 _locked = !_locked;
                 Cursor.lockState = _locked ? CursorLockMode.Locked : CursorLockMode.None;
                 Cursor.visible = !_locked;
             }
 
+            ScanInteractable();
             if (InputLocked) return;
 
             Look();
@@ -93,6 +97,19 @@ namespace Cipher.Gameplay.Player
             _verticalVelocity += gravity * Time.deltaTime;
             world.y = _verticalVelocity;
             _controller.Move(world * Time.deltaTime);
+        }
+
+        void ScanInteractable()
+        {
+            _interactPrompt = null;
+            if (cameraPivot == null) return;
+            Ray ray = new Ray(cameraPivot.position, cameraPivot.forward);
+            if (!Physics.Raycast(ray, out RaycastHit hit, interactRange)) return;
+            var interactable = hit.collider.GetComponentInParent<IInteractable>();
+            if (interactable != null && interactable.CanInteract)
+            {
+                _interactPrompt = interactable.Prompt;
+            }
         }
 
         void TryInteract()

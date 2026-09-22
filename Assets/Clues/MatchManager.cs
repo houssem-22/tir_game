@@ -8,6 +8,7 @@ namespace Cipher.Clues
         Booting,
         Playing,
         Victory,
+        Defeat,
         FailedGeneration
     }
 
@@ -39,9 +40,12 @@ namespace Cipher.Clues
             get
             {
                 if (_phase == MatchPhase.Victory) return "ACCESS GRANTED — VICTOIRE";
+                if (_phase == MatchPhase.Defeat) return "TEMPS ÉCOULÉ — MISSION ÉCHOUÉE";
+                if (_phase == MatchPhase.FailedGeneration) return _status;
                 if (_mission == null) return "Génération des indices…";
                 if (_cluesFound >= 3) return $"Atteignez {_mission.finalNodeId} et saisissez le code.";
-                return _mission.steps[Mathf.Clamp(_cluesFound, 0, 2)].text;
+                if (_mission.steps == null || _mission.steps.Length == 0) return "Aucun indice.";
+                return _mission.steps[Mathf.Clamp(_cluesFound, 0, _mission.steps.Length - 1)].text;
             }
         }
 
@@ -83,8 +87,9 @@ namespace Cipher.Clues
                 return;
             }
 
+            int stepCount = _mission.steps != null ? _mission.steps.Length : 3;
             _cluesFound = 0;
-            _found = new bool[3];
+            _found = new bool[stepCount];
             _timeRemaining = matchDurationSeconds;
             _phase = MatchPhase.Playing;
             _status = $"Seed {_mission.seed} · 3 indices validés";
@@ -100,6 +105,7 @@ namespace Cipher.Clues
             if (_timeRemaining <= 0f)
             {
                 _timeRemaining = 0f;
+                _phase = MatchPhase.Defeat;
                 _status = "Temps écoulé";
                 Changed?.Invoke();
             }
