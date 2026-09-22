@@ -41,6 +41,8 @@ namespace Cipher.Gameplay.Interactables
             _labelMesh.anchor = TextAnchor.MiddleCenter;
             _labelMesh.alignment = TextAlignment.Center;
             _labelMesh.color = new Color(0.95f, 0.85f, 0.4f);
+            var col = GetComponent<Collider>();
+            if (col != null) col.isTrigger = true;
         }
 
         void LateUpdate()

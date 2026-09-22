@@ -11,8 +11,7 @@ using UnityEngine;
 namespace Cipher.Bootstrap
 {
     /// <summary>
-    /// Phase 2 BLACKSITE bootstrap: enterable modular interiors + PBR textures.
-    /// Quaternius FBX drop-ins under Assets/Art/**/Quaternius are preferred when present.
+    /// Phase 3 BLACKSITE bootstrap: 4 m modular kit, LOS bots, objective compass.
     /// </summary>
     public sealed class Mvp1Bootstrap : MonoBehaviour
     {
@@ -46,7 +45,7 @@ namespace Cipher.Bootstrap
             BlacksiteLevel.Build();
 
             // Spawn south of Hospital lobby door — walk north into lobby
-            var player = BuildPlayer(new Vector3(-28f, 0.1f, -4.5f));
+            var player = BuildPlayer(BlacksiteLevel.PlayerSpawn);
             var health = player.GetComponent<PlayerHealth>();
             var weapons = player.GetComponentInChildren<WeaponController>();
 
@@ -61,7 +60,7 @@ namespace Cipher.Bootstrap
             if (match.Mission != null)
             {
                 Debug.Log($"[CIPHER] Seed={match.Mission.seed} CODE={match.Mission.code} Final={match.Mission.finalNodeId}");
-                Debug.Log("[CIPHER] Path: enter Hospital door (north) → Camera room → Building 04 → Room 17 Terminal → Bunker vault code.");
+                Debug.Log("[CIPHER] Path: Hospital lobby computer / cameras → Building 04 west panel → Room 17 terminal → Bunker vault pad.");
             }
         }
 
@@ -72,21 +71,20 @@ namespace Cipher.Bootstrap
                 var lightGo = new GameObject("Directional Light");
                 var light = lightGo.AddComponent<Light>();
                 light.type = LightType.Directional;
-                light.color = new Color(0.55f, 0.68f, 0.9f);
-                light.intensity = 0.85f;
+                light.color = new Color(0.7f, 0.78f, 0.95f);
+                light.intensity = 1.15f;
                 light.shadows = LightShadows.Soft;
-                lightGo.transform.rotation = Quaternion.Euler(38f, -40f, 0f);
+                lightGo.transform.rotation = Quaternion.Euler(42f, -35f, 0f);
             }
 
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.18f, 0.22f, 0.28f);
-            RenderSettings.ambientEquatorColor = new Color(0.12f, 0.12f, 0.11f);
-            RenderSettings.ambientGroundColor = new Color(0.06f, 0.05f, 0.04f);
+            RenderSettings.ambientSkyColor = new Color(0.28f, 0.32f, 0.38f);
+            RenderSettings.ambientEquatorColor = new Color(0.18f, 0.18f, 0.16f);
+            RenderSettings.ambientGroundColor = new Color(0.08f, 0.07f, 0.06f);
             RenderSettings.fog = true;
-            RenderSettings.fogColor = new Color(0.12f, 0.14f, 0.16f);
+            RenderSettings.fogColor = new Color(0.16f, 0.18f, 0.2f);
             RenderSettings.fogMode = FogMode.Exponential;
-            RenderSettings.fogDensity = 0.018f;
-            RenderSettings.subtractiveShadowColor = new Color(0.15f, 0.16f, 0.2f);
+            RenderSettings.fogDensity = 0.01f;
         }
 
         static void BuildClueObjects(ClueDatabase db, MatchManager match)
@@ -117,7 +115,7 @@ namespace Cipher.Bootstrap
             var pad = GameObject.CreatePrimitive(PrimitiveType.Cube);
             pad.name = "Bunker_CodePad";
             pad.transform.position = pos;
-            pad.transform.localScale = new Vector3(0.7f, 1.1f, 0.35f);
+            pad.transform.localScale = new Vector3(0.55f, 1.1f, 0.28f);
             pad.GetComponent<Renderer>().sharedMaterial = RuntimeMaterials.AccentWarn;
             pad.AddComponent<CodePadInteractable>().Setup(match);
         }
@@ -133,7 +131,10 @@ namespace Cipher.Bootstrap
             controller.height = 1.8f;
             controller.radius = 0.35f;
             controller.center = new Vector3(0f, 0.9f, 0f);
-            controller.stepOffset = 0.35f;
+            controller.stepOffset = 0.3f;
+            controller.skinWidth = 0.08f;
+            controller.minMoveDistance = 0f;
+            controller.slopeLimit = 45f;
 
             var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             body.name = "Body";
@@ -197,38 +198,39 @@ namespace Cipher.Bootstrap
 
         static void BuildBots(Transform player, MatchManager match)
         {
-            // Phase 2: 5 bots — mix of patrol / seek-clue
-            SpawnBot("Bot_Hospital_Guard", new Vector3(-24f, 1f, 0f), new[]
+            SpawnBot("Bot_Yard_East", new Vector3(-17f, 1f, 8f), new[]
             {
-                new Vector3(-24f, 1f, 0f), new Vector3(-32f, 1f, 2f), new Vector3(-26f, 1f, 8f)
-            }, player, match, new Color(0.45f, 0.2f, 0.18f), seeker: false);
+                new Vector3(-17f, 1f, 8f), new Vector3(-13f, 1f, 4f), new Vector3(-17f, 1f, 12f)
+            }, player, match, new Color(0.45f, 0.2f, 0.18f));
 
-            SpawnBot("Bot_Hospital_Seeker", new Vector3(-28f, 1f, 12f), new[]
+            SpawnBot("Bot_Yard_South", new Vector3(-17f, 1f, -1.5f), new[]
             {
-                new Vector3(-28f, 1f, 12f), new Vector3(-28f, 1f, 16f)
-            }, player, match, new Color(0.5f, 0.25f, 0.15f), seeker: true);
+                new Vector3(-17f, 1f, -1.5f), new Vector3(-12f, 1f, -1.5f), new Vector3(-14f, 1f, 3f)
+            }, player, match, new Color(0.5f, 0.25f, 0.15f));
 
-            SpawnBot("Bot_Industrial_A", new Vector3(-2f, 1f, 14f), new[]
+            SpawnBot("Bot_Industrial", new Vector3(16f, 1f, 14f), new[]
             {
-                new Vector3(-2f, 1f, 14f), new Vector3(6f, 1f, 18f), new Vector3(0f, 1f, 24f)
-            }, player, match, new Color(0.42f, 0.22f, 0.18f), seeker: false);
+                new Vector3(16f, 1f, 14f), new Vector3(14f, 1f, 22f), new Vector3(20f, 1f, 18f)
+            }, player, match, new Color(0.42f, 0.22f, 0.18f));
 
-            SpawnBot("Bot_Industrial_Seeker", new Vector3(4f, 1f, 20f), new[]
+            SpawnBot("Bot_Bunker_Approach", new Vector3(28f, 1f, 4f), new[]
             {
-                new Vector3(4f, 1f, 20f), new Vector3(2f, 1f, 26f)
-            }, player, match, new Color(0.48f, 0.2f, 0.16f), seeker: true);
-
-            SpawnBot("Bot_Bunker_Defender", new Vector3(30f, 1f, -4f), new[]
-            {
-                new Vector3(30f, 1f, -4f), new Vector3(36f, 1f, -6f), new Vector3(32f, 1f, -12f)
-            }, player, match, new Color(0.38f, 0.16f, 0.14f), seeker: false);
+                new Vector3(28f, 1f, 4f), new Vector3(40f, 1f, 4f), new Vector3(34f, 1f, 2f)
+            }, player, match, new Color(0.38f, 0.16f, 0.14f));
         }
 
-        static void SpawnBot(string name, Vector3 pos, Vector3[] waypoints, Transform player, MatchManager match, Color color, bool seeker)
+        static void SpawnBot(string name, Vector3 pos, Vector3[] waypoints, Transform player, MatchManager match, Color color)
         {
             var bot = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             bot.name = name;
             bot.transform.position = pos;
+            var cap = bot.GetComponent<CapsuleCollider>();
+            if (cap != null)
+            {
+                cap.enabled = false;
+                Destroy(cap);
+            }
+
             var body = bot.GetComponent<Renderer>();
             body.sharedMaterial = RuntimeMaterials.Rust;
             body.material.color = color;
@@ -238,11 +240,17 @@ namespace Cipher.Bootstrap
             visor.transform.SetParent(bot.transform, false);
             visor.transform.localPosition = new Vector3(0f, 0.45f, 0.28f);
             visor.transform.localScale = new Vector3(0.42f, 0.16f, 0.18f);
-            Object.Destroy(visor.GetComponent<Collider>());
+            Destroy(visor.GetComponent<Collider>());
             visor.GetComponent<Renderer>().sharedMaterial = RuntimeMaterials.AccentIntel;
 
-            var ai = bot.AddComponent<BotController>();
-            ai.Setup(waypoints, player, match, color, preferSeekClue: seeker);
+            var cc = bot.AddComponent<CharacterController>();
+            cc.height = 2f;
+            cc.radius = 0.38f;
+            cc.center = Vector3.zero;
+            cc.slopeLimit = 45f;
+            cc.stepOffset = 0.3f;
+
+            bot.AddComponent<BotController>().Setup(waypoints, player, match, color);
         }
     }
 }

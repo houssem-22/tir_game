@@ -11,7 +11,7 @@ namespace Cipher.Gameplay.Player
         [SerializeField] float sprintSpeed = 8.5f;
         [SerializeField] float jumpHeight = 1.2f;
         [SerializeField] float gravity = -22f;
-        [SerializeField] float interactRange = 2.6f;
+        [SerializeField] float interactRange = 3.4f;
 
         [Header("Look")]
         [SerializeField] Transform cameraPivot;
@@ -104,7 +104,7 @@ namespace Cipher.Gameplay.Player
             _interactPrompt = null;
             if (cameraPivot == null) return;
             Ray ray = new Ray(cameraPivot.position, cameraPivot.forward);
-            if (!Physics.Raycast(ray, out RaycastHit hit, interactRange)) return;
+            if (!Physics.Raycast(ray, out RaycastHit hit, interactRange, ~0, QueryTriggerInteraction.Collide)) return;
             var interactable = hit.collider.GetComponentInParent<IInteractable>();
             if (interactable != null && interactable.CanInteract)
             {
@@ -118,7 +118,7 @@ namespace Cipher.Gameplay.Player
             if (cameraPivot == null) return;
 
             Ray ray = new Ray(cameraPivot.position, cameraPivot.forward);
-            if (!Physics.Raycast(ray, out RaycastHit hit, interactRange)) return;
+            if (!Physics.Raycast(ray, out RaycastHit hit, interactRange, ~0, QueryTriggerInteraction.Collide)) return;
 
             var interactable = hit.collider.GetComponentInParent<IInteractable>();
             interactable?.Interact(gameObject);

@@ -141,7 +141,10 @@ namespace Cipher.Gameplay.Weapons
                 if (Physics.Raycast(muzzle.position, dir, out RaycastHit hit, w.range, hitMask, QueryTriggerInteraction.Ignore))
                 {
                     var damageable = hit.collider.GetComponentInParent<IDamageable>();
-                    damageable?.ApplyDamage(w.damage, gameObject);
+                    if (damageable == null) continue;
+                    var mb = damageable as MonoBehaviour;
+                    if (mb != null && mb.transform.root == transform.root) continue;
+                    damageable.ApplyDamage(w.damage, gameObject);
                     Debug.DrawLine(muzzle.position, hit.point, Color.yellow, 0.08f);
                 }
                 else

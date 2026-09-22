@@ -41,6 +41,7 @@ namespace Cipher.UI
             DrawVitals();
             DrawIntel();
             DrawCrosshair();
+            DrawCompass();
             DrawInteractPrompt();
 
             if (_match.Phase == MatchPhase.Victory) DrawBanner("ACCESS GRANTED", "Victoire par objectif — pas par éliminations", Ok);
@@ -159,6 +160,25 @@ namespace Cipher.UI
             float cy = Screen.height * 0.5f;
             Fill(new Rect(cx - 8f, cy - 1f, 16f, 2f), new Color(1f, 1f, 1f, 0.75f));
             Fill(new Rect(cx - 1f, cy - 8f, 2f, 16f), new Color(1f, 1f, 1f, 0.75f));
+        }
+
+        void DrawCompass()
+        {
+            if (_match.Phase != MatchPhase.Playing || _health == null) return;
+            if (!_match.TryGetObjectivePosition(out Vector3 target)) return;
+
+            Vector3 from = _health.transform.position;
+            Vector3 dir = target - from;
+            dir.y = 0f;
+            float dist = dir.magnitude;
+            if (dist < 0.2f) return;
+
+            float relative = Mathf.DeltaAngle(_health.transform.eulerAngles.y, Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg);
+            float cx = Screen.width * 0.5f + relative * 1.6f;
+            cx = Mathf.Clamp(cx, Screen.width * 0.5f - 140f, Screen.width * 0.5f + 140f);
+            Fill(new Rect(cx - 6f, 102f, 12f, 12f), Amber);
+            _dim.normal.textColor = Amber;
+            GUI.Label(new Rect(Screen.width * 0.5f - 90f, 116f, 180f, 20f), $"{dist:0} m  → objectif", _dim);
         }
 
         void DrawInteractPrompt()

@@ -54,6 +54,30 @@ namespace Cipher.Clues
         public event Action Victory;
         public event Action Changed;
 
+        public bool TryGetObjectivePosition(out Vector3 worldPosition)
+        {
+            worldPosition = Vector3.zero;
+            if (_db == null || _mission == null) return false;
+            string id;
+            if (_cluesFound >= 3)
+            {
+                id = "Bunker_Terminal";
+            }
+            else if (_mission.steps == null || _cluesFound < 0 || _cluesFound >= _mission.steps.Length)
+            {
+                return false;
+            }
+            else
+            {
+                id = _mission.steps[_cluesFound].targetNodeId;
+            }
+
+            var node = _db.Find(id);
+            if (node == null) return false;
+            worldPosition = node.worldPosition;
+            return true;
+        }
+
         public void Configure(ClueDatabase database, int seed)
         {
             _db = database;

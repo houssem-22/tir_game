@@ -71,17 +71,17 @@ namespace Cipher.Clues
                 Node("Zone_Industrial", MapNodeType.Zone, "Industrial Yard", "Zone_Industrial", null, null, false, false, new Vector3(0f, 0f, 18f)),
                 Node("Zone_Bunker", MapNodeType.Zone, "Bunker Approach", "Zone_Bunker", null, null, false, false, new Vector3(30f, 0f, -6f)),
 
-                Node("Building_04", MapNodeType.Building, "Building 04", "Zone_Industrial", "Building_04", null, true, false, new Vector3(-3.4f, 1.2f, 18f), related: "Terminal_C"),
-                Node("Room_17", MapNodeType.Room, "Room 17", "Zone_Industrial", "Building_04", "Room_17", false, false, new Vector3(2f, 0f, 26f)),
+                Node("Building_04", MapNodeType.Building, "Building 04", "Zone_Industrial", "Building_04", null, true, false, new Vector3(0.55f, 1.25f, 20f), related: "Terminal_C"),
+                Node("Room_17", MapNodeType.Room, "Room 17", "Zone_Industrial", "Building_04", "Room_17", false, false, new Vector3(4f, 0f, 28f)),
 
-                Node("Camera_12", MapNodeType.Camera, "Camera 12", "Zone_Hospital", "Hospital_Wing", "CameraRoom", true, false, new Vector3(-25.4f, 2.35f, 17.2f), faces: "East", related: "Building_04"),
-                Node("Terminal_C", MapNodeType.Terminal, "Terminal C", "Zone_Industrial", "Building_04", "Room_17", true, false, new Vector3(4.4f, 1.15f, 27.2f), related: "Bunker_07"),
+                Node("Camera_12", MapNodeType.Camera, "Camera 12", "Zone_Hospital", "Hospital_Wing", "CameraRoom", true, false, new Vector3(-24.55f, 2.35f, 20f), faces: "East", related: "Building_04"),
+                Node("Terminal_C", MapNodeType.Terminal, "Terminal C", "Zone_Industrial", "Building_04", "Room_17", true, false, new Vector3(6.2f, 1.05f, 28.5f), related: "Bunker_07"),
 
-                Node("Bunker_07", MapNodeType.Bunker, "Bunker 07", "Zone_Bunker", "Bunker_07", "Entry", false, true, new Vector3(34f, 0f, -8f)),
-                Node("Bunker_Terminal", MapNodeType.Terminal, "Bunker Code Pad", "Zone_Bunker", "Bunker_07", "Vault", false, true, new Vector3(34f, 1.15f, -14.4f), related: "Bunker_07"),
+                Node("Bunker_07", MapNodeType.Bunker, "Bunker 07", "Zone_Bunker", "Bunker_07", "Entry", false, true, new Vector3(36f, 0f, -4f)),
+                Node("Bunker_Terminal", MapNodeType.Terminal, "Bunker Code Pad", "Zone_Bunker", "Bunker_07", "Vault", false, true, new Vector3(36f, 1.15f, -12f), related: "Bunker_07"),
 
-                Node("Camera_03", MapNodeType.Camera, "Camera 03", "Zone_Hospital", "Hospital_Wing", "Lobby", true, false, new Vector3(-24.2f, 2.35f, 4.6f), faces: "South", related: "Building_04"),
-                Node("Computer_A1", MapNodeType.Computer, "Computer A1", "Zone_Hospital", "Hospital_Wing", "Records", true, false, new Vector3(-30.5f, 0.98f, 2.5f), related: "Building_04"),
+                Node("Camera_03", MapNodeType.Camera, "Camera 03", "Zone_Hospital", "Hospital_Wing", "Lobby", true, false, new Vector3(-20.45f, 2.35f, 5.5f), faces: "South", related: "Building_04"),
+                Node("Computer_A1", MapNodeType.Computer, "Computer A1", "Zone_Hospital", "Hospital_Wing", "Records", true, false, new Vector3(-29.6f, 0.95f, 3.2f), related: "Building_04"),
             };
 
             _runtimeFallback = db;

@@ -19,6 +19,8 @@ namespace Cipher.Gameplay.Interactables
         public void Setup(MatchManager match)
         {
             _match = match;
+            var col = GetComponent<Collider>();
+            if (col != null) col.isTrigger = true;
         }
 
         public void Interact(GameObject actor)

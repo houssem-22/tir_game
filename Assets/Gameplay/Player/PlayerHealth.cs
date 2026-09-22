@@ -15,6 +15,8 @@ namespace Cipher.Gameplay.Player
         Quaternion _spawnRotation;
         CharacterController _controller;
 
+        float _protectUntil;
+
         public float MaxHealth => maxHealth;
         public float CurrentHealth => _health;
         public bool IsAlive => !_dead;
@@ -27,17 +29,20 @@ namespace Cipher.Gameplay.Player
             _health = maxHealth;
             _spawnPosition = transform.position;
             _spawnRotation = transform.rotation;
+            _protectUntil = Time.time + 3f;
         }
 
         public void SetSpawn(Vector3 position, Quaternion rotation)
         {
             _spawnPosition = position;
             _spawnRotation = rotation;
+            _protectUntil = Time.time + 3f;
         }
 
         public void ApplyDamage(float amount, GameObject source)
         {
             if (_dead || amount <= 0f) return;
+            if (Time.time < _protectUntil) return;
 
             _health = Mathf.Max(0f, _health - amount);
             HealthChanged?.Invoke(_health, maxHealth);
@@ -79,6 +84,15 @@ namespace Cipher.Gameplay.Player
             }
 
             HealFull();
+            _protectUntil = Time.time + 3f;
+        }
+
+        void LateUpdate()
+        {
+            if (transform.position.y < -4f)
+            {
+                Respawn();
+            }
         }
     }
 }
