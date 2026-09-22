@@ -38,7 +38,7 @@ namespace Cipher.AI
 
         public bool IsAlive => !_dead;
 
-        public void Setup(Vector3[] waypoints, Transform player, MatchManager match, Color color)
+        public void Setup(Vector3[] waypoints, Transform player, MatchManager match, Color color, bool preferSeekClue = false)
         {
             _waypoints = waypoints;
             _player = player;
@@ -47,7 +47,7 @@ namespace Cipher.AI
             _health = maxHealth;
             _renderer = GetComponentInChildren<Renderer>();
             if (_renderer != null) _renderer.material.color = color;
-            if (Random.value < clueInterestChance) _mode = BotMode.SeekClue;
+            _mode = preferSeekClue || Random.value < clueInterestChance ? BotMode.SeekClue : BotMode.Patrol;
         }
 
         void Update()
