@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Cipher.Clues
@@ -74,6 +75,15 @@ namespace Cipher.Clues
             var c2 = _db.Find("Building_04");
             var c3 = _db.Find("Terminal_C");
             var finalNode = _db.Find("Bunker_07");
+            if (c1 == null || c2 == null || c3 == null || finalNode == null)
+            {
+                return new ClueMission
+                {
+                    seed = seed,
+                    validated = false,
+                    steps = Array.Empty<ClueStep>()
+                };
+            }
 
             return new ClueMission
             {

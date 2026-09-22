@@ -167,6 +167,8 @@ namespace Cipher.AI
             if (_health <= 0f)
             {
                 _dead = true;
+                var col = GetComponent<Collider>();
+                if (col != null) col.enabled = false;
                 if (_renderer != null) _renderer.material.color = new Color(0.2f, 0.2f, 0.2f);
                 Destroy(gameObject, 2.5f);
             }

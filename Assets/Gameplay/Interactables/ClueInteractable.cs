@@ -29,14 +29,18 @@ namespace Cipher.Gameplay.Interactables
             if (_labelMesh != null) return;
             var labelGo = new GameObject("Label");
             labelGo.transform.SetParent(transform, false);
-            labelGo.transform.localPosition = Vector3.up * 1.4f;
+            labelGo.transform.localScale = new Vector3(
+                1f / Mathf.Max(0.01f, transform.localScale.x),
+                1f / Mathf.Max(0.01f, transform.localScale.y),
+                1f / Mathf.Max(0.01f, transform.localScale.z));
+            labelGo.transform.localPosition = new Vector3(0f, 0.65f + 0.35f / Mathf.Max(0.01f, transform.localScale.y), 0f);
             _labelMesh = labelGo.AddComponent<TextMesh>();
             _labelMesh.text = label;
-            _labelMesh.characterSize = 0.08f;
-            _labelMesh.fontSize = 48;
+            _labelMesh.characterSize = 0.06f;
+            _labelMesh.fontSize = 42;
             _labelMesh.anchor = TextAnchor.MiddleCenter;
             _labelMesh.alignment = TextAlignment.Center;
-            _labelMesh.color = new Color(0.85f, 0.9f, 0.75f);
+            _labelMesh.color = new Color(0.95f, 0.85f, 0.4f);
         }
 
         void LateUpdate()
